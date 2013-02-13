@@ -1,8 +1,9 @@
 package Search::Tokenizer;
 use warnings;
 use strict;
+use Unicode::CaseFold ();
 
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
 sub new {
   my $class = shift;
@@ -54,10 +55,10 @@ sub new {
         my $term = substr($string, $start, $end-$start);
 
         # apply filtering and stopwords, if any
-        $term = lc($term)          if $lower;
-        $term = $filter->($term)   if $filter;
-        $filter_in_place->($term)  if $filter_in_place;
-        undef $term                if $stopwords and $stopwords->{$term};
+        $term = Unicode::CaseFold::fc($term) if $lower;
+        $term = $filter->($term)             if $filter;
+        $filter_in_place->($term)            if $filter_in_place;
+        undef $term            if $stopwords and $stopwords->{$term};
 
         # if $term was not cancelled by filters above, return it
         if ($term) {
@@ -87,10 +88,13 @@ sub word_unicode {
 
 sub unaccent {
   require Text::Transliterator::Unaccent;
-  my $unaccenter = Text::Transliterator::Unaccent->new(upper => 0);
+  my %args = @_;
+  my $want_lower      = !exists $args{lower} || $args{lower};
+  my %unaccenter_args = $want_lower ? () : (upper => 0);
+  my $unaccenter = Text::Transliterator::Unaccent->new(%unaccenter_args);
   __PACKAGE__->new(regex           => qr/\p{Word}+/,
                    filter_in_place => $unaccenter,
-                   @_);
+                   %args);
 }
 
 
@@ -185,7 +189,9 @@ advanced regexes :
 =item C<< lower => $bool >>
 
 If true, the term returned by the C<$regex> is 
-converted to lowercase. This option is activated by default.
+converted to lowercase (or more precisely: is 
+"case-folded" through L<Unicode::CaseFold/fc>).
+This option is activated by default.
 
 =item C<< filter => $filter >>
 

@@ -1,6 +1,6 @@
 #!perl -T
 
-use Test::More tests => 3;
+use Test::More tests => 4;
 
 BEGIN {
   use_ok( 'Search::Tokenizer' ) || print "Bail out!";
@@ -29,6 +29,9 @@ $string   = "il était une bergère";
 $tokenizer = Search::Tokenizer::unaccent(stopwords => {il => 1, une => 1});
 $iterator  = $tokenizer->($string);
 is_deeply([unroll($iterator, 1)], [qw/etait bergere/], "unaccent");
+
+$iterator  = $tokenizer->("IL ÉTAIT UNE BERGÈRE");
+is_deeply([unroll($iterator, 1)], [qw/etait bergere/], "unaccent uppercase");
 
 
 sub unroll {
