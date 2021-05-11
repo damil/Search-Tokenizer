@@ -4,6 +4,9 @@ use warnings;
 use Test::More;
 use Time::HiRes qw/time/;
 
+use lib "../lib";
+
+
 BEGIN {
   use_ok( 'Search::Tokenizer' ) || print "Bail out!";
 }
@@ -42,8 +45,8 @@ close $fh;
 my $time_for_native_string = time_for(sub {count_words($large_string)});
 utf8::upgrade($large_string);
 my $time_for_utf8_string   = time_for(sub {count_words($large_string)});
-note sprintf "large_string : %.3f native, %.3f utf8", $time_for_native_string, $time_for_utf8_string;
-ok ($time_for_utf8_string <= 2*$time_for_native_string, "utf8 string more than twice slower than native");
+note sprintf "large_string : %.4f native, %.4f utf8", $time_for_native_string, $time_for_utf8_string;
+ok ($time_for_utf8_string <= 3*$time_for_native_string, "utf8 string not too much slower than native");
 
 done_testing();
 

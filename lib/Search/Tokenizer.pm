@@ -49,10 +49,15 @@ sub new {
         $term_index += 1;
 
         # boundaries for the match
-        my ($start, $end) = ($-[0], $+[0]);
+        my $end   = pos($string);
+        my $term  = $&; # used to be slow in older perls, but now OK
+        my $start = $end - length($term);
 
-        # extract matched substring (more efficient than $&)
-        my $term = substr($string, $start, $end-$start);
+        # the old way used to be as follows, but it is ridiculously slow on utf8 strings
+        # .. see https://github.com/Perl/perl5/issues/18786
+        #
+        # my ($start, $end) = ($-[0], $+[0]); 
+        # my $term = substr($string, $start, $end-$start);
 
         # apply filtering and stopwords, if any
         $term = Unicode::CaseFold::fc($term) if $lower;
