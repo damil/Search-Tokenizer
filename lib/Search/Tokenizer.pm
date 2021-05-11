@@ -3,7 +3,7 @@ use warnings;
 use strict;
 use Unicode::CaseFold ();
 
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 
 sub new {
   my $class = shift;
