@@ -4,8 +4,7 @@ use strict;
 use Carp              qw(croak);
 use Unicode::CaseFold qw(fc);    # because CORE::fc only came with Perl 5.16
 
-our $VERSION = '1.02';
-
+our $VERSION = '1.03';
 
 #======================================================================
 # MAIN FUNCTIONALITY
