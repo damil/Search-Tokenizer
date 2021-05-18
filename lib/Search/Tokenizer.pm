@@ -6,6 +6,11 @@ use Unicode::CaseFold qw(fc);    # because CORE::fc only came with Perl 5.16
 
 our $VERSION = '1.02';
 
+
+#======================================================================
+# MAIN FUNCTIONALITY
+#======================================================================
+
 sub new {
   my $class = shift;
 
@@ -82,6 +87,11 @@ sub new {
   };
 }
 
+#======================================================================
+# BUILTIN TOKENIZERS
+#======================================================================
+
+
 sub word {
   __PACKAGE__->new(regex => qr/\w+/, @_);
 }
@@ -104,6 +114,22 @@ sub unaccent {
   __PACKAGE__->new(regex           => qr/\p{Word}+/,
                    filter_in_place => $unaccenter,
                    %args);
+}
+
+
+#======================================================================
+# UTILITY FUNCTION
+#======================================================================
+
+sub unroll {
+  my $iterator   = shift;
+  my $no_details = shift;
+  my @results;
+
+  while (my @r = $iterator->() ) {
+    push @results, $no_details ? $r[0] : \@r;
+  }
+  return @results;
 }
 
 
@@ -336,6 +362,18 @@ as C<new()>: for example
 
   use Search::Tokenizer;
   my $tokenizer = Search::Tokenizer::unaccent(lower => 0, stopwords => ...);
+
+
+=head1 UNROLLING THE ITERATOR
+
+=head2 unroll
+
+  my @tokens = Search::Tokenizer::unroll($iterator, $no_details);
+
+This utility method returns the list of all tokens obtained from repetitive
+calls to the C<$iterator>. The C<$no_details> argument is optional; if true,
+the results are just strings, instead of tuples with positional information.
+
 
 =head1 SEE ALSO
 

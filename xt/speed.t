@@ -12,33 +12,27 @@ my $tokenizer = Search::Tokenizer->new(
  );
 
 open my $fh, "<", $INC{'Search/Tokenizer.pm'} or die $!;
-my $large_string = do {local $/; <$fh>};
+my $source_code = do {local $/; <$fh>};
 close $fh;
+my $large_string = $source_code x 10;
+
 
 my $time_for_native_string = time_for(sub {count_words($large_string)});
 utf8::upgrade($large_string);
 my $time_for_utf8_string   = time_for(sub {count_words($large_string)});
-note sprintf "large_string : %.4f native, %.4f utf8", $time_for_native_string, $time_for_utf8_string;
+note sprintf "large_string(%d chars) : %.4f native, %.4f utf8",
+  length($large_string),
+  $time_for_native_string,
+  $time_for_utf8_string;
 ok ($time_for_utf8_string <= 3*$time_for_native_string, "utf8 string not too much slower than native");
 
 done_testing();
-
-sub unroll {
-  my $iterator   = shift;
-  my $no_details = shift;
-  my @results;
-
-  while (my @r = $iterator->() ) {
-    push @results, $no_details ? $r[0] : \@r;
-  }
-  return @results;
-}
 
 
 sub count_words {
   my $string   = shift;
   my $iterator = $tokenizer->($string);
-  my @words    = unroll($iterator, 1);
+  my @words    = Search::Tokenizer::unroll($iterator, 1);
   return scalar @words;
 }
 
