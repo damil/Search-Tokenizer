@@ -2,10 +2,6 @@
 use strict;
 use warnings;
 use Test::More;
-use Time::HiRes qw/time/;
-
-use lib "../lib";
-
 
 BEGIN {
   use_ok( 'Search::Tokenizer' ) || print "Bail out!";
@@ -38,42 +34,19 @@ is_deeply([unroll($iterator, 1)], [qw/etait bergere/], "unaccent");
 $iterator  = $tokenizer->("IL ÉTAIT UNE BERGÈRE");
 is_deeply([unroll($iterator, 1)], [qw/etait bergere/], "unaccent uppercase");
 
-open my $fh, "<", $INC{'Search/Tokenizer.pm'} or die $!;
-my $large_string = do {local $/; <$fh>};
-close $fh;
-
-my $time_for_native_string = time_for(sub {count_words($large_string)});
-utf8::upgrade($large_string);
-my $time_for_utf8_string   = time_for(sub {count_words($large_string)});
-note sprintf "large_string : %.4f native, %.4f utf8", $time_for_native_string, $time_for_utf8_string;
-ok ($time_for_utf8_string <= 3*$time_for_native_string, "utf8 string not too much slower than native");
-
 done_testing();
 
 sub unroll {
-  my $iterator      = shift;
-  my $just_the_term = shift;
+  my $iterator   = shift;
+  my $no_details = shift;
   my @results;
 
   while (my @r = $iterator->() ) {
-    push @results, $just_the_term ? $r[0] : \@r;
+    push @results, $no_details ? $r[0] : \@r;
   }
   return @results;
 }
 
 
-sub count_words {
-  my $string   = shift;
-  my $iterator = $tokenizer->($string);
-  my @words    = unroll($iterator, 1);
-  return scalar @words;
-}
 
 
-sub time_for {
-  my $sub = shift;
-  my $t0 = time;
-  $sub->();
-  my $t1 = time;
-  return $t1 - $t0;
-}
